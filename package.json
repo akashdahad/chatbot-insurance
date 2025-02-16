@@ -6,21 +6,24 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "patch-package"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.7.0",
     "next": "13.4.2",
+    "patch-package": "^8.0.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "@chakra-ui/react": "^2.7.0"
+    "react-chatbotify": "^2.0.0-beta.28",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.1.7",
-    "@eslint/eslintrc": "^3"
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20.2.3",
+    "@types/react": "^18.2.6",
+    "@types/react-dom": "^18.2.4",
+    "eslint": "^8.41.0",
+    "eslint-config-next": "^13.4.3",
+    "typescript": "5.0.4"
   }
 }

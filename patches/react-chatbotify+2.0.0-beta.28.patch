@@ -1,0 +1,9 @@
+diff --git a/node_modules/react-chatbotify/dist/index.js b/node_modules/react-chatbotify/dist/index.js
+index f8918cf..93ed55b 100644
+--- a/node_modules/react-chatbotify/dist/index.js
++++ b/node_modules/react-chatbotify/dist/index.js
+@@ -1,4 +1,3 @@
+-import "./style.css";
+ import { jsxs as G, jsx as l, Fragment as nA } from "react/jsx-runtime";
+ import * as K from "react";
+ import { forwardRef as cA, createContext as hA, useContext as DA, Fragment as YA, useRef as eA, useState as T, useCallback as M, useEffect as V, isValidElement as ie, createElement as te, useMemo as wA } from "react";
