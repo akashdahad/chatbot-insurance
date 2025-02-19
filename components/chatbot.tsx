@@ -5,27 +5,20 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   NEW_REGISTRATION_PROMPT,
   INSURANCE_QUERY_PROMPT,
+  VERIFY_REGISTRATION_PROMPT,
 } from "../constants/prompts";
 
 const Chatbot = () => {
   const [flowType, setFlowType] = useState<string | null>(null);
   const [form, setForm] = useState<any>({});
+  const [conversation, setConversation] = useState<any>([]);
   let hasEnded = false;
-  const formStyle = {
-    marginTop: 10,
-    marginLeft: 20,
-    border: "1px solid #491d8d",
-    padding: 10,
-    borderRadius: 5,
-    maxWidth: 300,
-  };
 
   const key = process.env.NEXT_PUBLIC_AI_KEY || "";
   const genAI = new GoogleGenerativeAI(key);
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const ai_conversation_response = async (params: any) => {
-    // await params.injectMessage("Thank you for using our service.");
     let prompt = "";
     if (flowType === "New Registration") {
       prompt = NEW_REGISTRATION_PROMPT;
@@ -36,9 +29,49 @@ const Chatbot = () => {
       hasEnded = true;
       return "Goodbye";
     }
-    const result = await model.generateContent(prompt);
-    if (result?.response?.candidates?.length)
-      return result?.response?.candidates[0].content.parts[0].text;
+    // await params.injectMessage("Thank you for using our service.");
+    let tempConversation = [...conversation];
+    tempConversation.push({ Patient: params.userInput });
+    setConversation(tempConversation);
+    console.log(conversation);
+    let finalPrompt = `${prompt}`;
+    conversation.forEach((item: any) => {
+      finalPrompt += `\n${Object.keys(item)[0]}: ${Object.values(item)[0]}`;
+    });
+    finalPrompt += `\nPatient: ${params.userInput}. Assistant: `;
+    console.log(finalPrompt);
+    const result = await model.generateContent(finalPrompt);
+    if (result?.response?.candidates?.length) {
+      let finalResponse = result?.response?.candidates[0].content.parts[0].text;
+      finalResponse = finalResponse?.replace("Patient: ", "");
+      finalResponse = finalResponse?.replaceAll("*", "");
+      finalResponse = finalResponse?.replaceAll('"', "");
+      finalResponse = finalResponse?.replaceAll("“", "");
+      finalResponse =
+        (finalResponse?.split("Assistant:")?.length || 0) >= 2
+          ? finalResponse?.split("Assistant:")[1]
+          : finalResponse;
+      finalResponse = finalResponse?.replace("Assistant:", "");
+      if (finalResponse?.trim() === "Done.") {
+        let verifyPrompt = VERIFY_REGISTRATION_PROMPT;
+        conversation.forEach((item: any) => {
+          verifyPrompt += `\n${Object.keys(item)[0]}: ${
+            Object.values(item)[0]
+          }`;
+        });
+        const verifyResponse = await model.generateContent(verifyPrompt);
+        if (verifyResponse?.response?.candidates?.length) {
+          console.log(
+            "result",
+            verifyResponse?.response?.candidates[0].content.parts[0].text
+          );
+          return verifyResponse?.response?.candidates[0].content.parts[0].text;
+        }
+      }
+      tempConversation.push({ Assistant: finalResponse });
+      setConversation(tempConversation);
+      return finalResponse;
+    }
     hasEnded = true;
     return "Sorry, Something when wrong, Please try again";
   };
@@ -52,7 +85,7 @@ const Chatbot = () => {
         setFlowType(params.userInput);
         console.log("flowType", params.userInput);
       },
-      path: "ai_flow",
+      path: "loop",
     },
     ai_flow: {
       message:
